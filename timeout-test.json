@@ -1,6 +1,0 @@
-{
-  "api_key": "test_key_123",
-  "usercode": "import time\ndef add(a, b):\n    time.sleep(10)\n    return a + b\ndef solution(a, b):\n    return add(a, b)",
-  "unittests": "def test():\n    from usercode import add\n    result = add(1, 2)\n    return {'success': True, 'message': 'Test completed', 'total_points': 1, 'max_points': 1}",
-  "performancetests": "def performance_test():\n    return {'success': True, 'message': 'No perf test', 'total_points': 0, 'max_points': 0}"
-} 

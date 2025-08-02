@@ -17,11 +17,11 @@ export function buildDockerCommand(sessionId: string, sessionPath: string, confi
     '--read-only',                        // Read-only root filesystem (extra security)
     '--tmpfs', `/tmp:noexec,nosuid,size=${dockerConfig.TMP_SIZE}`, // Temporary filesystem for /tmp
     '--user', `${process.getuid?.() || 1000}:${process.getgid?.() || 1000}`, // Run as current user
-    '-v', `${resolve(sessionPath)}:/code`, // Mount session directory
+    '-v', `${resolve(sessionPath)}:/code:ro`, // Mount session directory as READ-ONLY
     '-w', '/code',
     CONFIG.DOCKER.IMAGE,
     'bash', '-c',
-    `timeout ${dockerConfig.TIMEOUT} python3 runner.py`
+    `PYTHONDONTWRITEBYTECODE=1 timeout ${dockerConfig.TIMEOUT} python3 runner.py`,
   ]
 }
 
