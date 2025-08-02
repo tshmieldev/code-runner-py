@@ -25,18 +25,25 @@ setupContainerCleanup()
 
 app.post('/run', async (c) => {
   // TODO: In the future, accept dynamic code via POST request
-  const body = await c.req.json()
+  let body = null;
+
+  try{
+    body = await c.req.json()
+  }
+  catch {
+    return c.json({ success: false, error: 'Invalid JSON' }, 400)
+  }
   
   const validatedData = requestSchema.safeParse(body)
 
   if (!validatedData.success) {
-    return c.json({ error: validatedData.error.message }, 400)
+    return c.json({ success: false,error: validatedData.error.message }, 400)
   }
 
   const { usercode, unittests, performancetests, api_key, config } = validatedData.data
 
   if(api_key !== Bun.env.API_KEY) {
-    return c.json({ error: 'Invalid API key' }, 401)
+    return c.json({ success: false, error: 'Invalid API key' }, 401)
   }
 
   // Create unique session
@@ -70,6 +77,7 @@ app.post('/run', async (c) => {
       await cleanupSessionDirectory(sessionPath, sessionId)
       
       return c.json({ 
+        success: false,
         error: 'Execution timed out',
         message: 'Code execution exceeded the time limit',
         exit_code: exitCode,
@@ -83,8 +91,9 @@ app.post('/run', async (c) => {
     if (exitCode !== 0) {
       untrackContainer(containerName)
       await cleanupSessionDirectory(sessionPath, sessionId)
-      
+
       return c.json({ 
+        success: false,
         error: 'Execution failed',
         message: `Process exited with code ${exitCode}`,
         exit_code: exitCode,
@@ -102,12 +111,14 @@ app.post('/run', async (c) => {
     try {
       const data = JSON.parse(stdout)
       return c.json({ 
+        success: true,
         data,
         exit_code: exitCode,
         timeout: false
       })
     } catch (parseError) {
       return c.json({ 
+        success: false,
         error: 'Failed to parse execution results',
         message: 'The code executed but produced invalid output',
         stdout: stdout,
