@@ -8,4 +8,12 @@ To run:
 bun run dev
 ```
 
-open http://localhost:3000
+```
+To use:
+POST http://localhost:3001
+body:
+  usercode: z.string().min(1),
+  unittests: z.string().min(1),
+  performancetests: z.string(),
+  api_key: z.string().min(1)
+```
