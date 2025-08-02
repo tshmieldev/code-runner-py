@@ -21,5 +21,13 @@ body:
   usercode: z.string().min(1),
   unittests: z.string().min(1),
   performancetests: z.string(),
-  api_key: z.string().min(1)
+  api_key: z.string().min(1),
+  config (optionally): {
+    timeout: z.number().min(1).max(300).int().optional(), // seconds
+    memory: z.number().min(64).max(2048).int().optional(), // mB
+    cpus: z.number().min(0.5).max(4.0).multipleOf(0.5).optional(), // increments of 0.5
+    tmp_size: z.number().min(10).max(1024).int().optional(), // mB
+  }
+
+Defaults are in /src/config.ts
 ```
