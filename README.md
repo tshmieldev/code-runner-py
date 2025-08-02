@@ -1,4 +1,5 @@
 Prerequisites:
+- bun -> `https://bun.com/`
 - docker -> see `https://docs.docker.com/engine/install/`
 - docker image - python:3.10-slim -> `docker pull python:3.10-slim`
 - make sure the user running the code has docker permissions -> `sudo usermod -aG docker $USER`, then reload terminal or `newgrp docker`
