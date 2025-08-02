@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { serve } from 'bun'
-import { CONFIG } from './config'
+import { DEFAULT_CONFIG as CONFIG } from './config'
 import { requestSchema } from './validation'
 import { 
   buildDockerCommand, 
@@ -26,13 +26,14 @@ setupContainerCleanup()
 app.post('/run', async (c) => {
   // TODO: In the future, accept dynamic code via POST request
   const body = await c.req.json()
+  
   const validatedData = requestSchema.safeParse(body)
 
   if (!validatedData.success) {
     return c.json({ error: validatedData.error.message }, 400)
   }
 
-  const { usercode, unittests, performancetests, api_key } = validatedData.data
+  const { usercode, unittests, performancetests, api_key, config } = validatedData.data
 
   if(api_key !== Bun.env.API_KEY) {
     return c.json({ error: 'Invalid API key' }, 401)
@@ -50,7 +51,7 @@ app.post('/run', async (c) => {
     trackContainer(containerName)
 
     // Execute in Docker
-    const command = buildDockerCommand(sessionId, sessionPath)
+    const command = buildDockerCommand(sessionId, sessionPath, config)
     const proc = Bun.spawn(command, {
       stdout: 'pipe',
       stderr: 'pipe'
@@ -58,14 +59,63 @@ app.post('/run', async (c) => {
 
     const stdout = await new Response(proc.stdout).text()
     const stderr = await new Response(proc.stderr).text()
+    
+    // Wait for process to complete and get exit code
+    const exitCode = await proc.exited
 
-    // Cleanup
+    // Check if container timed out
+    if (exitCode === 124) {
+      // Timeout exit code from the 'timeout' command
+      untrackContainer(containerName)
+      await cleanupSessionDirectory(sessionPath, sessionId)
+      
+      return c.json({ 
+        error: 'Execution timed out',
+        message: 'Code execution exceeded the time limit',
+        exit_code: exitCode,
+        stdout: stdout,
+        stderr: stderr,
+        timeout: true
+      }, 408) // 408 Request Timeout
+    }
+    
+    // Check for other Docker/execution errors
+    if (exitCode !== 0) {
+      untrackContainer(containerName)
+      await cleanupSessionDirectory(sessionPath, sessionId)
+      
+      return c.json({ 
+        error: 'Execution failed',
+        message: `Process exited with code ${exitCode}`,
+        exit_code: exitCode,
+        stdout: stdout,
+        stderr: stderr,
+        timeout: false
+      }, 500)
+    }
+
+    // Cleanup on success
     untrackContainer(containerName)
     await cleanupSessionDirectory(sessionPath, sessionId)
 
     // Parse and return results
-    const data = stdout
-    return c.json({ data: JSON.parse(data) })
+    try {
+      const data = JSON.parse(stdout)
+      return c.json({ 
+        data,
+        exit_code: exitCode,
+        timeout: false
+      })
+    } catch (parseError) {
+      return c.json({ 
+        error: 'Failed to parse execution results',
+        message: 'The code executed but produced invalid output',
+        stdout: stdout,
+        stderr: stderr,
+        exit_code: exitCode,
+        timeout: false
+      }, 500)
+    }
     
   } catch (err) {
     // Error cleanup
@@ -74,7 +124,8 @@ app.post('/run', async (c) => {
     await cleanupSessionDirectory(sessionPath, sessionId)
     
     return c.json({ 
-      error: err instanceof Error ? err.message : String(err) 
+      error: err instanceof Error ? err.message : String(err),
+      timeout: false
     }, 500)
   }
 })

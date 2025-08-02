@@ -1,26 +1,27 @@
 import { resolve } from 'path'
-import { CONFIG } from './config'
+import { DEFAULT_CONFIG as CONFIG, DOCKER_CONFIG } from './config'
+import { Config } from './validation'
 
 // Track active containers
 let activeContainers = new Set<string>()
 
-export function buildDockerCommand(sessionId: string, sessionPath: string): string[] {
+export function buildDockerCommand(sessionId: string, sessionPath: string, config?: Config): string[] {
   const containerName = `code-runner-${sessionId}`
-  
+  const dockerConfig = DOCKER_CONFIG(config)
   return [
     'docker', 'run', '--rm', '-i',
     '--name', containerName,              // Named container for cleanup tracking
     '--network', 'none',                  // No network access
-    '--cpus', CONFIG.DOCKER.CPUS,         // CPU limits
-    '--memory', CONFIG.DOCKER.MEMORY,     // Memory limits
+    '--cpus', dockerConfig.CPUS,         // CPU limits
+    '--memory', dockerConfig.MEMORY,     // Memory limits
     '--read-only',                        // Read-only root filesystem (extra security)
-    '--tmpfs', `/tmp:noexec,nosuid,size=${CONFIG.DOCKER.TMP_SIZE}`, // Temporary filesystem for /tmp
+    '--tmpfs', `/tmp:noexec,nosuid,size=${dockerConfig.TMP_SIZE}`, // Temporary filesystem for /tmp
     '--user', `${process.getuid?.() || 1000}:${process.getgid?.() || 1000}`, // Run as current user
     '-v', `${resolve(sessionPath)}:/code`, // Mount session directory
     '-w', '/code',
     CONFIG.DOCKER.IMAGE,
     'bash', '-c',
-    `timeout ${CONFIG.DOCKER.TIMEOUT} python3 runner.py`
+    `timeout ${dockerConfig.TIMEOUT} python3 runner.py`
   ]
 }
 

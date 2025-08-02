@@ -1,7 +1,7 @@
 import { join } from 'path'
 import { existsSync, mkdirSync } from 'fs'
 import { mkdir, copyFile, rm , writeFile} from 'fs/promises'
-import { CONFIG } from './config'
+import { DEFAULT_CONFIG as CONFIG } from './config'
 
 // Initialize executor directory
 export function initializeCodeDir(): void {
