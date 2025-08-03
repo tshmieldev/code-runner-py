@@ -14,8 +14,7 @@ class Test:
         try:
             if self.is_secret:
                 with open(os.devnull, 'w') as devnull:
-                    with contextlib.redirect_stdout(devnull), \
-                         contextlib.redirect_stderr(devnull):
+                    with contextlib.redirect_stdout(devnull),                          contextlib.redirect_stderr(devnull):
                         result = self.func(*self.args)
             else:
                 result = self.func(*self.args)
@@ -64,15 +63,12 @@ class Tester:
         }
 
 Tester.tests = [
-    Test("add(1, 2) == 3", solution, (1, 2), 3, 1),
-    Test("add(1, -2) == -1", solution, (1, -2), -1, 1),
-    Test("add(-1, -2) == -3", solution, (-1, -2), -3, 1),
-    Test("add(0, 0) == 0", solution, (0, 0), 0, 1),
-    Test("add(1, 0) == 1", solution, (1, 0), 1, 1),
-    Test("add(0, 1) == 1", solution, (0, 1), 1, 1),
-    Test("add(1, 1) == 2", solution, (1, 1), 2, 1),
+    Test("min(1, 2) == 1", solution, (1, 2), 1, 1),
+    Test("min(1, -2) == -2", solution, (1, -2), -2, 1),
+    Test("min(-1, -2) == -2", solution, (-1, -2), -2, 1),
 ]
 
 def test():
     return Tester.run()
+
 

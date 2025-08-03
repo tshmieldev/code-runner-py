@@ -17,8 +17,7 @@ class PerformanceTest:
     
     def run(self):
         with open(os.devnull, 'w') as devnull:
-            with contextlib.redirect_stdout(devnull), \
-                 contextlib.redirect_stderr(devnull):
+            with contextlib.redirect_stdout(devnull),                  contextlib.redirect_stderr(devnull):
                 try:
                     
                     if self.test_type in ['time', 'both']:

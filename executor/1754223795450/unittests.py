@@ -1,6 +1,6 @@
 import os
 import contextlib
-from usercode import solution
+from usercode import add
 
 class Test:
     def __init__(self, name, func, args, expected, points, is_secret=False):
@@ -12,22 +12,15 @@ class Test:
         self.is_secret = is_secret
     def run(self):
         try:
-            if self.is_secret:
-                with open(os.devnull, 'w') as devnull:
-                    with contextlib.redirect_stdout(devnull), \
-                         contextlib.redirect_stderr(devnull):
-                        result = self.func(*self.args)
-            else:
-                result = self.func(*self.args)
-                print(f"Test: {self.name}: {result}")
+            result = self.func(*self.args)
             if result == self.expected:
                 if self.is_secret:
-                    return {'name' : 'Ukryty test', 'points': self.points, 'max_points': self.points, 'error': None, 'expected': 'N/A', 'result': 'N/A', 'is_secret': True}
+                    return {'name' : 'Ukryty test', 'points': self.points, 'max_points': self.points, 'error': None, 'expected': 'N/A', 'result': result, 'is_secret': True}
                 else:
                     return {'name': self.name, 'points': self.points, 'max_points': self.points, 'error': None, 'expected': self.expected, 'result': result}
             else:
                 if self.is_secret:
-                    return {'name': 'Ukryty test', 'points': 0, 'max_points': self.points, 'error': None, 'expected': 'N/A', 'result': 'N/A', 'is_secret': True}
+                    return {'name': 'Ukryty test', 'points': 0, 'max_points': self.points, 'error': None, 'expected': 'N/A', 'result': result, 'is_secret': True}
                 else:
                     return {'name': self.name, 'points': 0, 'max_points': self.points, 'error': None, 'expected': self.expected, 'result': result}
         except Exception as e:
@@ -75,4 +68,3 @@ Tester.tests = [
 
 def test():
     return Tester.run()
-

@@ -90,7 +90,7 @@ app.post('/run', async (c) => {
     // Check for other Docker/execution errors
     if (exitCode !== 0) {
       untrackContainer(containerName)
-      await cleanupSessionDirectory(sessionPath, sessionId)
+      //await cleanupSessionDirectory(sessionPath, sessionId)
 
       return c.json({ 
         success: false,
