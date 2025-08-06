@@ -14,8 +14,7 @@ class Test:
         try:
             if self.is_secret:
                 with open(os.devnull, 'w') as devnull:
-                    with contextlib.redirect_stdout(devnull), \
-                         contextlib.redirect_stderr(devnull):
+                    with contextlib.redirect_stdout(devnull),                          contextlib.redirect_stderr(devnull):
                         result = self.func(*self.args)
             else:
                 result = self.func(*self.args)
@@ -75,4 +74,5 @@ Tester.tests = [
 
 def test():
     return Tester.run()
+
 

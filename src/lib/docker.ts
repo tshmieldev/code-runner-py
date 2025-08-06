@@ -1,11 +1,11 @@
 import { resolve } from 'path'
-import { DEFAULT_CONFIG as CONFIG, DOCKER_CONFIG } from './config'
+import { DEFAULT_CONFIG as CONFIG, DOCKER_CONFIG } from '../config'
 import { Config } from './validation'
 
 // Track active containers
 let activeContainers = new Set<string>()
 
-export function buildDockerCommand(sessionId: string, sessionPath: string, config?: Config): string[] {
+export function buildDockerCommand(sessionId: string, sessionPath: string, type: 'unit-test' | 'performance-test', config?: Config): string[] {
   const containerName = `code-runner-${sessionId}`
   const dockerConfig = DOCKER_CONFIG(config)
   return [
@@ -21,7 +21,7 @@ export function buildDockerCommand(sessionId: string, sessionPath: string, confi
     '-w', '/code',
     CONFIG.DOCKER.IMAGE,
     'bash', '-c',
-    `PYTHONDONTWRITEBYTECODE=1 timeout ${dockerConfig.TIMEOUT} python3 runner.py`,
+    `PYTHONDONTWRITEBYTECODE=1 timeout ${dockerConfig.TIMEOUT} python3 ${type === 'unit-test' ? 'unit-test-runner.py' : 'performance-test-runner.py'}`,
   ]
 }
 

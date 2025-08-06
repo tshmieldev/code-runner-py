@@ -1,4 +1,4 @@
-import { Config } from "./validation"
+import { Config } from "./lib/validation"
 
 export const DEFAULT_CONFIG = {
     CODE_DIR: './executor',
