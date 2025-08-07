@@ -22,14 +22,16 @@ export async function writeCodeFile(sessionPath: string, filename: string, conte
 
 export async function prepareUnitTestFiles(sessionPath: string, usercode: string, unittests: string): Promise<void> {
   const srcDir = __dirname
-  await copyFile(join(srcDir, 'unit-test-runner.py'), join(sessionPath, 'unit-test-runner.py'))
+  await copyFile(join(srcDir, 'python', 'unittestlib.py'), join(sessionPath, 'unittestlib.py'))
+  await copyFile(join(srcDir, 'python', 'unit-test-runner.py'), join(sessionPath, 'unit-test-runner.py'))
   await writeCodeFile(sessionPath, 'usercode.py', usercode)
   await writeCodeFile(sessionPath, 'unittests.py', unittests)
 }
 
 export async function preparePerformanceTestFiles(sessionPath: string, usercode: string, performance_tests: string): Promise<void> {
   const srcDir = __dirname
-  await copyFile(join(srcDir, 'performance-test-runner.py'), join(sessionPath, 'performance-test-runner.py'))
+  await copyFile(join(srcDir, 'python', 'performancelib.py'), join(sessionPath, 'performancelib.py'))
+  await copyFile(join(srcDir, 'python', 'performance-test-runner.py'), join(sessionPath, 'performance-test-runner.py'))
   await writeCodeFile(sessionPath, 'usercode.py', usercode)
   await writeCodeFile(sessionPath, 'performance_tests.py', performance_tests)
 }

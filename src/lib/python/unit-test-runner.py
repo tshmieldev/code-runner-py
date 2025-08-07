@@ -3,19 +3,19 @@ import json
 import os
 import sys
 import io
+from unittests import test
 
 try:
-    from performance_tests import performance_test
+    from usercode import solution
 except ImportError:
-    def performance_test():
-        """Default performance test that always passes"""
-        return {
-            'success': True,
-            'message': 'No performance tests found',
-            'results': [],
-            'total_points': 0,
-            'max_points': 0
-        }
+    sys.__stdout__.write(json.dumps({
+        'runalyzer_errors': 'Nie znaleziono funkcji solution.',
+        'test_result': None,
+        'stdout': None,
+        'stderr': None,
+        'truncated': False,
+    }))
+    exit(1)
 
 def truncate_output(output, max_chars=256):
     """Truncate output to max_chars and add ... if needed"""
@@ -28,15 +28,15 @@ if __name__ == "__main__":
     stdout_capture = io.StringIO()
     stderr_capture = io.StringIO()
     
-    perf_res = None
+    test_res = None
     
     try:
         with contextlib.redirect_stdout(stdout_capture), \
              contextlib.redirect_stderr(stderr_capture):
-            perf_res = performance_test()
+            test_res = test(solution)
             
     except Exception as e:
-        perf_res = {'success': False, 'message': f'Runtime error: {str(e)}'}
+        test_res = {'success': False, 'message': f'Runtime error: {str(e)}'}
 
     # Get captured output and truncate
     stdout_data = truncate_output(stdout_capture.getvalue(), 1024)
@@ -49,7 +49,7 @@ if __name__ == "__main__":
             
             # Print final results (this goes to the original stdout before redirection)
             sys.__stdout__.write(json.dumps({
-                'test_result': perf_res,
+                'test_result': test_res,
                 'stdout': stdout_data,
                 'stderr': stderr_data,
                 'truncated': len(stdout_capture.getvalue()) > 1024 or len(stderr_capture.getvalue()) > 1024

@@ -47,6 +47,37 @@ export const runUnitTestResponseSchema = z.object({
     exit_code: z.number(),
 })
 
+export const runPerformanceTestResponseSchema = z.object({
+  success: z.boolean(),
+  runalyzer_output: z.object({
+    test_result: z.object({
+      success: z.boolean(),
+      message: z.string(),
+      results: z.array(z.object({
+        name: z.string(),
+        points: z.number(),
+        max_points: z.number(),
+        message: z.string().optional(),
+        error: z.string().or(z.null()),
+        metrics: z.object({
+          avg_time: z.number().optional(),
+          min_time: z.number().optional(),
+          max_time: z.number().optional(),
+          avg_memory: z.number().optional(),
+          peak_memory: z.number().optional(),
+        }).optional(),
+      })),
+      total_points: z.number(),
+      max_points: z.number(),
+    }),
+    stdout: z.string(),
+    stderr: z.string(),
+    truncated: z.boolean(),
+  }),
+  runalyzer_errors: z.string(),
+  exit_code: z.number(),
+})
+
 export type RunUnitTestRequest = z.infer<typeof runUnitTestRequestSchema> 
 export type RunPerformanceTestRequest = z.infer<typeof runPerformanceTestRequestSchema>
 export type Config = z.infer<typeof configSchema>

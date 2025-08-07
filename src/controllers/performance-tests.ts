@@ -49,8 +49,8 @@ app.post('/', async (c) => {
 
     // Wait for process to complete and get exit code
     const exitCode = proc.exitCode
-
-    const result = JSON.parse(stdout);
+   
+    const result = JSON.parse(stdout || '{}');
 
     return c.json({
       success: true,
@@ -59,6 +59,7 @@ app.post('/', async (c) => {
       exit_code: exitCode,
     })
   } catch (error) {
+    console.error(error)
     return c.json({ success: false, error: 'Internal server error' }, 500)
   } finally {
     untrackContainer(containerName)
