@@ -2,12 +2,13 @@ import os
 import contextlib
 
 class Test:
-    def __init__(self, name, args, expected, points, is_secret=False):
+    def __init__(self, name, args, expected, points, equalityFunc=None, is_secret=False):
         self.name = name
         self.args = args
         self.expected = expected
         self.points = points
         self.is_secret = is_secret
+        self.equalityFunc = equalityFunc or (lambda x, y: x == y)
     def run(self, solution):
         try:
             if self.is_secret:
@@ -17,7 +18,7 @@ class Test:
             else:
                 result = solution(*self.args)
                 print(f"Test: {self.name}: {result}")
-            if result == self.expected:
+            if self.equalityFunc(result, self.expected):
                 if self.is_secret:
                     return {
                         'name' : 'Ukryty test',
