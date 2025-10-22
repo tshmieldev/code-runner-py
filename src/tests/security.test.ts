@@ -24,7 +24,7 @@ test("Hacky solution does not pass", async () => {
   expect(res.status).toBe(200);
 
   const returned = await res.json();
-  expect(returned.success).toBe(false);
+  expect(returned.runalyzer_output.test_result.total_points).toBe(0);
 });
 
 test("Different return type does not pass", async () => {

@@ -1,6 +1,8 @@
 import os
 import contextlib
 
+defaultequalityfn = lambda x, y: x == y
+
 
 class Test:
     def __init__(
@@ -11,7 +13,7 @@ class Test:
         self.expected = expected
         self.points = points
         self.is_secret = is_secret
-        self.equalityFunc = equalityFunc or (lambda x, y: x == y)
+        self.equalityFunc = equalityFunc or defaultequalityfn
 
     def run(self, solution):
         try:
@@ -25,9 +27,10 @@ class Test:
             else:
                 result = solution(*self.args)
                 print(f"Test: {self.name}: {result}")
-            if isinstance(result, type(self.expected)) and self.equalityFunc(
-                result, self.expected
-            ):
+            if (
+                self.equalityFunc != defaultequalityfn
+                or isinstance(result, type(self.expected))
+            ) and self.equalityFunc(result, self.expected):
                 if self.is_secret:
                     return {
                         "name": "Ukryty test",
@@ -44,8 +47,8 @@ class Test:
                         "points": self.points,
                         "max_points": self.points,
                         "error": None,
-                        "expected": self.expected,
-                        "result": result,
+                        "expected": str(self.expected),
+                        "result": str(result),
                     }
             else:
                 if self.is_secret:
@@ -64,8 +67,8 @@ class Test:
                         "points": 0,
                         "max_points": self.points,
                         "error": None,
-                        "expected": self.expected,
-                        "result": result,
+                        "expected": str(self.expected),
+                        "result": str(result),
                     }
         except Exception as e:
             if self.is_secret:
