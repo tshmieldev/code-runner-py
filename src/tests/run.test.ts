@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { test, expect, it } from "bun:test";
+import { test, expect } from "bun:test";
 import app from "../controllers/unit-tests";
 import z from "zod";
 import { RunUnitTestRequest } from "../lib/validation";
@@ -26,7 +26,6 @@ test("Runalyzer works without errors", async () => {
   expect(res.status).toBe(200);
 
   const returned = await res.json();
-
   return true;
 });
 
@@ -56,7 +55,6 @@ test("Correct code gets max points", async () => {
   expect(returned.success).toBe(true);
   const { total_points, max_points } = returned.runalyzer_output.test_result;
   expect(total_points).toBe(max_points);
-  return true;
 });
 
 test("Incorrect code gets less than max points", async () => {
@@ -81,11 +79,9 @@ test("Incorrect code gets less than max points", async () => {
   expect(res.status).toBe(200);
 
   const returned = await res.json();
-
   expect(returned.success).toBe(true);
   const { total_points, max_points } = returned.runalyzer_output.test_result;
-  expect(total_points).toBe(max_points);
-  return true;
+  expect(total_points).toBeLessThan(max_points);
 });
 
 test("Invalid code is handled, shows SyntaxError", async () => {
@@ -113,6 +109,37 @@ test("Invalid code is handled, shows SyntaxError", async () => {
 
   expect(returned.success).toBe(false);
   expect(returned.runalyzer_errors).toInclude("SyntaxError");
-
-  return true;
 });
+
+test(
+  "Timeout code is handled, shows Time Limit Exceeded",
+  async () => {
+    const mockUserCode = await Bun.file(
+      __dirname + "/data/mock-timeout-code.py",
+    ).text();
+    const mockUnitTests = await Bun.file(
+      __dirname + "/data/mock-tests-1.py",
+    ).text();
+
+    const payload: RunUnitTestRequest = {
+      api_key: process?.env?.API_KEY || "",
+      user_code: mockUserCode,
+      unit_tests: mockUnitTests,
+    };
+
+    const res = await app.request("/", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+
+    expect(res.status).toBe(200);
+
+    const returned = await res.json();
+    expect(returned.exit_code).toBe(124);
+    expect(returned.success).toBe(false);
+    expect(returned.runalyzer_errors).toInclude("Time limit exceeded");
+  },
+  {
+    timeout: 6000,
+  },
+);
