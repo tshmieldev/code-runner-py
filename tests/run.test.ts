@@ -1,6 +1,6 @@
 import { test, expect } from "bun:test";
-import app from "../controllers/unit-tests";
-import { RunUnitTestRequest } from "../lib/validation";
+import app from "../src/controllers/unit-tests";
+import { RunUnitTestRequest } from "../src/lib/validation";
 
 test("Runalyzer works without errors", async () => {
     const mockUserCode = await Bun.file(

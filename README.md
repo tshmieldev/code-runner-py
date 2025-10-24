@@ -20,8 +20,8 @@ bun start
 ```
 
 ### How to use it?
-- Check out the `/src/tests` directory for examples.
-- You will find usercode and unittests in `/src/tests/data`
+- Check out the `tests` directory for examples.
+- You will find usercode and unittests in `tests/data`
 - You will see the API usage in the `.test.ts` files.
 
 ### Contributing
