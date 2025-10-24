@@ -44,24 +44,6 @@ export async function prepareUnitTestFiles(
     await writeCodeFile(sessionPath, "unittests.py", unittests);
 }
 
-export async function preparePerformanceTestFiles(
-    sessionPath: string,
-    usercode: string,
-    performance_tests: string,
-): Promise<void> {
-    const srcDir = __dirname;
-    await copyFile(
-        join(srcDir, "python", "performancelib.py"),
-        join(sessionPath, "performancelib.py"),
-    );
-    await copyFile(
-        join(srcDir, "python", "performance-test-runner.py"),
-        join(sessionPath, "performance-test-runner.py"),
-    );
-    await writeCodeFile(sessionPath, "usercode.py", usercode);
-    await writeCodeFile(sessionPath, "performance_tests.py", performance_tests);
-}
-
 export async function cleanupExecutorDirectory(): Promise<void> {
     try {
         await rm(CONFIG.CODE_DIR, { recursive: true, force: true });

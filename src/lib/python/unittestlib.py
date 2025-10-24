@@ -1,7 +1,9 @@
 import os
 import contextlib
 
-defaultequalityfn = lambda x, y: x == y
+
+def defaultequalityfn(x, y):
+    return x == y
 
 
 class Test:
@@ -26,6 +28,7 @@ class Test:
                         result = solution(*self.args)
             else:
                 result = solution(*self.args)
+                # To jest aby ułatwić uczniom debugowanie (ich printy są nie podzielone na testy, więc to pomaga)
                 print(f"Test: {self.name}: {result}")
             if (
                 self.equalityFunc != defaultequalityfn
@@ -71,16 +74,27 @@ class Test:
                         "result": str(result),
                     }
         except Exception as e:
-            if self.is_secret:
-                return {
-                    "name": "Ukryty test",
-                    "points": 0,
-                    "max_points": self.points,
-                    "error": str(e),
-                    "expected": "N/A",
-                    "result": None,
-                    "is_secret": True,
-                }
+            raise e
+            # if self.is_secret:
+            #     return {
+            #         "name": "Ukryty test",
+            #         "points": 0,
+            #         "max_points": self.points,
+            #         "error": str(e),
+            #         "expected": "N/A",
+            #         "result": None,
+            #         "is_secret": True,
+            #     }
+
+            # else:
+            #     return {
+            #         "name": self.name,
+            #         "points": 0,
+            #         "max_points": self.points,
+            #         "error": str(e),
+            #         "expected": str(self.expected),
+            #         "result": None,
+            #     }
 
 
 class Tester:
@@ -92,6 +106,7 @@ class Tester:
         results = []
         for test in Tester.tests:
             result = test.run(solution)
+
             results.append(result)
             total_points += result["points"]
             if result["error"]:

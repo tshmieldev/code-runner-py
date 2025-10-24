@@ -1,7 +1,5 @@
-import { Hono } from "hono";
 import { test, expect } from "bun:test";
 import app from "../controllers/unit-tests";
-import z from "zod";
 import { RunUnitTestRequest } from "../lib/validation";
 
 test("Runalyzer works without errors", async () => {
@@ -137,6 +135,31 @@ test("Invalid code is handled, shows SyntaxError", async () => {
 
     expect(returned.success).toBe(false);
     expect(returned.runalyzer_errors).toInclude("SyntaxError");
+});
+
+test("Buggy code is handled, shows error", async () => {
+    const mockUserCode = await Bun.file(
+        __dirname + "/data/mock-buggy-code.py",
+    ).text();
+    const mockUnitTests = await Bun.file(
+        __dirname + "/data/mock-tests-1.py",
+    ).text();
+
+    const payload: RunUnitTestRequest = {
+        api_key: process?.env?.API_KEY || "",
+        user_code: mockUserCode,
+        unit_tests: mockUnitTests,
+    };
+
+    const res = await app.request("/", {
+        method: "POST",
+        body: JSON.stringify(payload),
+    });
+
+    const returned = await res.json();
+    expect(res.status).toBe(200);
+    expect(returned.success).toBe(false);
+    expect(returned.runalyzer_errors).toBeTruthy();
 });
 
 test(
