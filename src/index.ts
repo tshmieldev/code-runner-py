@@ -19,4 +19,4 @@ serve({
     port: CONFIG.SERVER_PORT,
 });
 
-console.log(`🚀 Runner running on http://localhost:${CONFIG.SERVER_PORT}`);
+console.log(`🚀 Code runner running on http://localhost:${CONFIG.SERVER_PORT}`);

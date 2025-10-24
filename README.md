@@ -1,3 +1,6 @@
+### Tshmieldev's Amazing Code Runner
+This is a backend service for running and testing code in a sandboxed environment.
+
 Prerequisites:
 - bun -> `https://bun.com/`
 - docker -> see `https://docs.docker.com/engine/install/`
@@ -12,22 +15,14 @@ bun install
 To run:
 ```sh
 bun run dev
+or
+bun start
 ```
 
-```
-To use:
-POST http://localhost:3001
-body:
-  usercode: z.string().min(1),
-  unittests: z.string().min(1),
-  performancetests: z.string(),
-  api_key: z.string().min(1),
-  config (optionally): {
-    timeout: z.number().min(1).max(300).int().optional(), // seconds
-    memory: z.number().min(64).max(2048).int().optional(), // mB
-    cpus: z.number().min(0.5).max(4.0).multipleOf(0.5).optional(), // increments of 0.5
-    tmp_size: z.number().min(10).max(1024).int().optional(), // mB
-  }
+### How to use it?
+- Check out the `/src/tests` directory for examples.
+- You will find usercode and unittests in `/src/tests/data`
+- You will see the API usage in the `.test.ts` files.
 
-Defaults are in /src/config.ts
-```
+### Contributing
+- Just send a PR!
