@@ -1,6 +1,6 @@
 import { resolve } from "path";
 import { DEFAULT_CONFIG as CONFIG, DOCKER_CONFIG } from "../config";
-import { Config } from "./validation";
+import { type Config } from "./validation";
 
 // Track active containers
 let activeContainers = new Set<string>();

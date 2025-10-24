@@ -1,6 +1,6 @@
 import { test, expect } from "bun:test";
 import app from "../src/controllers/unit-tests";
-import { RunUnitTestRequest } from "../src/lib/validation";
+import { type RunUnitTestRequest } from "../src/lib/validation";
 
 test("App handles 20 concurrent requests - sorting big arrays", async () => {
     const mockUserCode = await Bun.file(
