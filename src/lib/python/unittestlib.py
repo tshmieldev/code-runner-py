@@ -75,6 +75,8 @@ class Test:
                     }
         except Exception as e:
             raise e
+            # Maybe code bellow will be uncommented in the future
+            # For now, bubbling up seems the best option
             # if self.is_secret:
             #     return {
             #         "name": "Ukryty test",
