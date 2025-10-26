@@ -32,7 +32,7 @@ class Test:
                 print(f"Test: {self.name}: {result}")
             if (
                 self.equalityFunc != defaultequalityfn
-                or type(result) is type(self.expected)
+                or isinstance(result, type(self.expected))
             ) and self.equalityFunc(result, self.expected):
                 if self.is_secret:
                     return {
