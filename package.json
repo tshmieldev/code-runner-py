@@ -5,6 +5,8 @@
         "start": "bun run src/index.ts"
     },
     "dependencies": {
+        "@hono/swagger-ui": "^0.5.2",
+        "@hono/zod-openapi": "^1.1.4",
         "hono": "^4.10.3",
         "uuid": "^11.1.0",
         "zod": "^4.0.14"

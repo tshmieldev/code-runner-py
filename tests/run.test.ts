@@ -1,6 +1,9 @@
 import { test, expect } from "bun:test";
 import app from "../src/controllers/unit-tests";
+import statusApp from "../src/controllers/status";
 import { type RunUnitTestRequest } from "../src/lib/validation";
+
+
 
 test("Runalyzer works without errors", async () => {
     const mockUserCode = await Bun.file(
@@ -230,3 +233,38 @@ test(
         timeout: 7000,
     },
 );
+
+test("Status endpoint returns correct number of running containers", async () => {
+    const mockUserCode = await Bun.file(
+        __dirname + "/data/mock-timeout-code.py",
+    ).text();
+    const mockUnitTests = await Bun.file(
+        __dirname + "/data/mock-tests-1.py",
+    ).text();
+
+    const payload: RunUnitTestRequest = {
+        api_key: process?.env?.API_KEY || "",
+        user_code: mockUserCode,
+        unit_tests: mockUnitTests,
+    };
+    const res = await statusApp.request('/', { method: "GET" });
+    expect(res.status).toBe(200);
+    const returned = await res.json();
+    expect(returned.runningContainers).toBe(0);
+    // Not awaiting on purpose, we want it to be running in the background
+    const resPromise = app.request("/", {
+        method: "POST",
+        body: JSON.stringify(payload),
+    });
+    // Give enough time for the container to start
+    await new Promise(resolve => setTimeout(resolve, 150));
+
+    const res2 = await statusApp.request('/', { method: "GET" });
+   
+    expect(res2.status).toBe(200);
+    const returned2 = await res2.json();
+    expect(returned2.runningContainers).toBe(1);
+    
+    // Not awaiting on purpose again, no need to hold up the rest of the tests
+
+});

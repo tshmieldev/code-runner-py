@@ -1,4 +1,7 @@
-import { Hono } from "hono";
+import {
+    OpenAPIHono,
+    type RouteConfigToTypedResponse,
+} from "@hono/zod-openapi";
 import { runUnitTestRequestSchema } from "../lib/validation";
 import { v4 } from "uuid";
 import {
@@ -12,76 +15,88 @@ import {
     trackContainer,
     untrackContainer,
 } from "../lib/docker";
-const app = new Hono();
+import { unitTestRoute } from "../lib/openapi";
 
-app.post("/", async (c) => {
-    let body = null;
+const app = new OpenAPIHono();
 
-    try {
-        body = await c.req.json();
-    } catch {
-        return c.json({ success: false, error: "Invalid JSON" }, 400);
-    }
+app.openapi(
+    { ...unitTestRoute, path: "/" },
+    async (c): Promise<RouteConfigToTypedResponse<typeof unitTestRoute>> => {
+        let body = null;
 
-    const validatedData = runUnitTestRequestSchema.safeParse(body);
+        try {
+            body = await c.req.json();
+        } catch {
+            return c.json({ success: false, error: "Invalid JSON" }, 400);
+        }
 
-    if (!validatedData.success) {
-        return c.json(
-            { success: false, error: validatedData.error.message },
-            400,
-        );
-    }
+        const validatedData = runUnitTestRequestSchema.safeParse(body);
 
-    const { user_code, unit_tests, api_key, config } = validatedData.data;
+        if (!validatedData.success) {
+            return c.json(
+                { success: false, error: validatedData.error.message },
+                400,
+            );
+        }
 
-    if (api_key !== Bun.env.API_KEY) {
-        return c.json({ success: false, error: "Invalid API key" }, 401);
-    }
+        const { user_code, unit_tests, api_key, config } = validatedData.data;
 
-    // Create unique session
-    const sessionId = v4();
-    const sessionPath = await createSessionDirectory(sessionId);
-    const containerName = getContainerName(sessionId);
+        if (api_key !== Bun.env.API_KEY) {
+            return c.json({ success: false, error: "Invalid API key" }, 401);
+        }
 
-    try {
-        // Setup files and container
-        await prepareUnitTestFiles(sessionPath, user_code, unit_tests);
-        trackContainer(containerName);
+        // Create unique session
+        const sessionId = v4();
+        const sessionPath = await createSessionDirectory(sessionId);
+        const containerName = getContainerName(sessionId);
 
-        // Execute in Docker
-        const command = buildDockerCommand(
-            sessionId,
-            sessionPath,
-            "unit-test",
-            config,
-        );
-        const proc = Bun.spawn(command, {
-            stdout: "pipe",
-            stderr: "pipe",
-        });
+        try {
+            // Setup files and container
+            await prepareUnitTestFiles(sessionPath, user_code, unit_tests);
+            trackContainer(containerName);
 
-        const stdout = await new Response(proc.stdout).text();
-        const stderr = await new Response(proc.stderr).text();
+            // Execute in Docker
+            const command = buildDockerCommand(
+                sessionId,
+                sessionPath,
+                "unit-test",
+                config,
+            );
+            const proc = Bun.spawn(command, {
+                stdout: "pipe",
+                stderr: "pipe",
+            });
 
-        // Wait for process to complete and get exit code
-        const exitCode = await proc.exited;
+            const stdout = await new Response(proc.stdout).text();
+            const stderr = await new Response(proc.stderr).text();
 
-        const result = JSON.parse(stdout || "{}");
+            // Wait for process to complete and get exit code
+            const exitCode = await proc.exited;
 
-        return c.json({
-            success: exitCode == 0,
-            runalyzer_output: result,
-            runalyzer_errors:
-                stderr || (exitCode === 124 ? "Time limit exceeded" : ""),
-            exit_code: exitCode,
-        });
-    } catch (error) {
-        console.error(error);
-        return c.json({ success: false, error: "Internal server error" }, 500);
-    } finally {
-        untrackContainer(containerName);
-        await cleanupSessionDirectory(sessionPath, sessionId);
-    }
-});
+            const result = JSON.parse(stdout || "{}");
+
+            return c.json(
+                {
+                    success: exitCode == 0,
+                    runalyzer_output: result,
+                    runalyzer_errors:
+                        stderr ||
+                        (exitCode === 124 ? "Time limit exceeded" : ""),
+                    exit_code: exitCode,
+                },
+                200,
+            );
+        } catch (error) {
+            console.error(error);
+            return c.json(
+                { success: false, error: "Internal server error" },
+                500,
+            );
+        } finally {
+            untrackContainer(containerName);
+            await cleanupSessionDirectory(sessionPath, sessionId);
+        }
+    },
+);
 
 export default app;

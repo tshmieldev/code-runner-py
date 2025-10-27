@@ -1,18 +1,26 @@
-import { Hono } from "hono";
+import { OpenAPIHono } from "@hono/zod-openapi";
 import { serve } from "bun";
 import { DEFAULT_CONFIG as CONFIG } from "./config";
 import { setupContainerCleanup } from "./lib/docker";
 import { initializeCodeDir, cleanupExecutorDirectory } from "./lib/files";
 import unitTestController from "./controllers/unit-tests";
+import statusController from "./controllers/status";
+import { swaggerUI } from "@hono/swagger-ui";
+import { openApiDocConfig } from "./lib/openapi";
 
 // Initialize
-const app = new Hono();
 initializeCodeDir();
 setupContainerCleanup();
-
 await cleanupExecutorDirectory();
 
-app.route("/unit-tests", unitTestController);
+const app = new OpenAPIHono();
+
+app.route("/run", unitTestController);
+app.route("/status", statusController);
+
+// Docs stuff
+app.doc("/doc", openApiDocConfig);
+app.get("/api-docs", swaggerUI({ url: "/doc" }));
 
 serve({
     fetch: app.fetch,
@@ -20,3 +28,7 @@ serve({
 });
 
 console.log(`🚀 Code runner running on http://localhost:${CONFIG.SERVER_PORT}`);
+console.log(
+    `📚 API Documentation: http://localhost:${CONFIG.SERVER_PORT}/api-docs`,
+);
+console.log(`📋 OpenAPI Spec: http://localhost:${CONFIG.SERVER_PORT}/doc`);
