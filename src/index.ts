@@ -26,7 +26,7 @@ app.get(
     Scalar({
         url: "/doc",
         title: "Tshmieldev's Amazing Runalyzer API",
-        theme: "elysiajs",
+        theme: "bluePlanet",
     }),
 );
 // Sorry, Scalar is just cooler than Swagger
