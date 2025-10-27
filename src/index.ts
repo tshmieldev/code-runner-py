@@ -1,14 +1,15 @@
-import { OpenAPIHono } from "@hono/zod-openapi";
 import { serve } from "bun";
+import { OpenAPIHono } from "@hono/zod-openapi";
+import { Scalar } from "@scalar/hono-api-reference";
+import { openApiDocConfig } from "./lib/openapi";
 import { DEFAULT_CONFIG as CONFIG } from "./config";
 import { setupContainerCleanup } from "./lib/docker";
 import { initializeCodeDir, cleanupExecutorDirectory } from "./lib/files";
 import unitTestController from "./controllers/unit-tests";
 import statusController from "./controllers/status";
-import { swaggerUI } from "@hono/swagger-ui";
-import { openApiDocConfig } from "./lib/openapi";
+//import { swaggerUI } from "@hono/swagger-ui";
 
-// Initialize
+// Initialize resources
 initializeCodeDir();
 setupContainerCleanup();
 await cleanupExecutorDirectory();
@@ -20,7 +21,16 @@ app.route("/status", statusController);
 
 // Docs stuff
 app.doc("/doc", openApiDocConfig);
-app.get("/api-docs", swaggerUI({ url: "/doc" }));
+app.get(
+    "/api-docs",
+    Scalar({
+        url: "/doc",
+        title: "Tshmieldev's Amazing Runalyzer API",
+        theme: "elysiajs",
+    }),
+);
+// Sorry, Scalar is just cooler than Swagger
+// app.get("/api-docs", swaggerUI({ url: "/doc" }));
 
 serve({
     fetch: app.fetch,
