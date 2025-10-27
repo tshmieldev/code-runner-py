@@ -1,0 +1,6 @@
+[test]
+
+coveragePathIgnorePatterns = [
+  "src/lib/docker.ts",
+  "src/lib/files.ts"
+]
