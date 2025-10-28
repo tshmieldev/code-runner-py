@@ -5,6 +5,7 @@ import contextlib
 def defaultequalityfn(x, y):
     return x == y
 
+
 class Test:
     def __init__(
         self, name, args, expected, points, equalityFunc=None, is_secret=False
@@ -50,7 +51,8 @@ class Test:
                 "result": "N/A" if self.is_secret else str(result),
                 "is_secret": self.is_secret,
             }
-            
+
+
 class Tester:
     tests = []
 
@@ -62,12 +64,12 @@ class Tester:
             result = test.run(solution)
             results.append(result)
             total_points += result["points"]
-        
+
         max_points = sum(test.points for test in Tester.tests)
         return {
-            "success": True,
+            "success": total_points == max_points,
             "message": f"Punkty: {total_points} / {max_points}",
             "results": results,
             "total_points": total_points,
-            "max_points": max_points,
+            "max_total_points": max_points,
         }

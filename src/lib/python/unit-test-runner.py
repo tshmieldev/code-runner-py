@@ -3,6 +3,7 @@ import json
 import os
 import sys
 import io
+import time
 from unittests import test
 
 try:
@@ -41,7 +42,10 @@ if __name__ == "__main__":
             contextlib.redirect_stdout(stdout_capture),
             contextlib.redirect_stderr(stderr_capture),
         ):
+            start = time.process_time()
             test_res = test(solution)
+            end = time.process_time()
+            duration = end - start
 
     except Exception as e:
         sys.__stderr__.write(str(e))
@@ -61,6 +65,7 @@ if __name__ == "__main__":
                         "test_result": test_res,
                         "stdout": stdout_data,
                         "stderr": stderr_data,
+                        "duration": duration,
                         "truncated": len(stdout_capture.getvalue()) > 1024
                         or len(stderr_capture.getvalue()) > 1024,
                     }

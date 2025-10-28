@@ -26,7 +26,8 @@ export const runUnitTestRequestSchema = z.object({
     }),
     unit_tests: z.string().min(1).openapi({
         description: "Test definitions using unittestlib",
-        example: "from unittestlib import Test, Tester\n\nTester.tests = [\n    Test(\"add(1, 2) == 3\", (1, 2), 3, 1)\n]\n\ndef test(solution):\n    return Tester.run(solution)",
+        example:
+            'from unittestlib import Test, Tester\n\nTester.tests = [\n    Test("add(1, 2) == 3", (1, 2), 3, 1)\n]\n\ndef test(solution):\n    return Tester.run(solution)',
     }),
     api_key: z.string().min(1).openapi({
         description: "Authentication key",
@@ -84,7 +85,7 @@ export const testResultOutputSchema = z.object({
         description: "Total points earned",
         example: 1,
     }),
-    max_points: z.number().openapi({
+    max_total_points: z.number().openapi({
         description: "Total points possible",
         example: 1,
     }),
@@ -101,6 +102,10 @@ export const runalyzerOutputSchema = z.object({
     stderr: z.string().openapi({
         description: "Standard error (truncated to 1024 chars)",
         example: "",
+    }),
+    duration: z.number().openapi({
+        description: "Execution duration in seconds",
+        example: 1.58e-7,
     }),
     truncated: z.boolean().openapi({
         description: "Whether output was truncated",
@@ -121,7 +126,8 @@ export const runUnitTestResponseSchema = z.object({
         example: "",
     }),
     exit_code: z.number().openapi({
-        description: "Process exit code (124 = timeout, 0 = success, !=0 - other error)",
+        description:
+            "Process exit code (124 = timeout, 0 = success, !=0 - other error)",
         example: 0,
     }),
 });
@@ -131,7 +137,7 @@ export const statusResponseSchema = z.object({
         description: "Number of running containers",
         example: 0,
     }),
-})
+});
 
 export const errorResponseSchema = z.object({
     success: z.boolean().openapi({
