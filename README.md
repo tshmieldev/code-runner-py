@@ -6,6 +6,13 @@ Prerequisites:
 - docker -> see `https://docs.docker.com/engine/install/`
 - docker image - python:3.10-slim -> `docker pull python:3.10-slim`
 - make sure the user running the code has docker permissions -> `sudo usermod -aG docker $USER`, then reload terminal or `newgrp docker`
+- to consume metrics, set METRICS_API_KEY in `.env` and `prometheus.yml`, then you can:
+```bash
+docker run -p 9090:9090 \
+  -v $(pwd)/prometheus.yml:/etc/prometheus/prometheus.yml \
+  prom/prometheus
+```
+and open localhost:9090
 
 To install dependencies:
 ```sh
