@@ -6,40 +6,6 @@ import {
     statusResponseSchema,
 } from "./validation";
 
-export const metricsRoute = createRoute({
-    method: "get",
-    path: "/metrics",
-    tags: ["metrics"],
-    summary: "Get Prometheus metrics.",
-    description: "Returns default prometheus metrics",
-    responses: {
-        200: {
-            content: {
-                "application/json": {
-                    schema: z.any(), // Managed by prometheus
-                },
-            },
-            description: "Server metrics as returned by printMetrics().",
-        },
-        401: {
-            content: {
-                "application/json": {
-                    schema: errorResponseSchema,
-                },
-            },
-            description: "Unauthorized",
-        },
-        500: {
-            content: {
-                "application/json": {
-                    schema: errorResponseSchema,
-                },
-            },
-            description: "Internal server error",
-        },
-    },
-});
-
 export const unitTestRoute = createRoute({
     method: "post",
     path: "/run",
@@ -108,6 +74,41 @@ export const statusRoute = createRoute({
                 },
             },
             description: "OK",
+        },
+    },
+});
+
+export const metricsRoute = createRoute({
+    method: "get",
+    path: "/metrics",
+    tags: ["Metrics"],
+    summary: "Get Prometheus metrics.",
+    description:
+        "Returns default prometheus metrics, requires an authorization header. See README.",
+    responses: {
+        200: {
+            content: {
+                "application/json": {
+                    schema: z.any(), // Managed by prometheus
+                },
+            },
+            description: "Server metrics as returned by printMetrics().",
+        },
+        401: {
+            content: {
+                "application/json": {
+                    schema: errorResponseSchema,
+                },
+            },
+            description: "Unauthorized",
+        },
+        500: {
+            content: {
+                "application/json": {
+                    schema: errorResponseSchema,
+                },
+            },
+            description: "Internal server error",
         },
     },
 });
