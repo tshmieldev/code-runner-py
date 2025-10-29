@@ -1,10 +1,44 @@
-import { createRoute } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
 import {
     runUnitTestRequestSchema,
     runUnitTestResponseSchema,
     errorResponseSchema,
     statusResponseSchema,
 } from "./validation";
+
+export const metricsRoute = createRoute({
+    method: "get",
+    path: "/metrics",
+    tags: ["metrics"],
+    summary: "Get Prometheus metrics.",
+    description: "Returns default prometheus metrics",
+    responses: {
+        200: {
+            content: {
+                "application/json": {
+                    schema: z.any(), // Managed by prometheus
+                },
+            },
+            description: "Server metrics as returned by printMetrics().",
+        },
+        401: {
+            content: {
+                "application/json": {
+                    schema: errorResponseSchema,
+                },
+            },
+            description: "Unauthorized",
+        },
+        500: {
+            content: {
+                "application/json": {
+                    schema: errorResponseSchema,
+                },
+            },
+            description: "Internal server error",
+        },
+    },
+});
 
 export const unitTestRoute = createRoute({
     method: "post",
@@ -62,10 +96,10 @@ export const unitTestRoute = createRoute({
 
 export const statusRoute = createRoute({
     method: "get",
-    path: '/status',
-    tags: ['Status'],
-    summary: 'Get the status of the server',
-    description: 'Returns the status of the server',
+    path: "/status",
+    tags: ["Status"],
+    summary: "Get the status of the server",
+    description: "Returns the status of the server",
     responses: {
         200: {
             content: {
@@ -73,10 +107,10 @@ export const statusRoute = createRoute({
                     schema: statusResponseSchema,
                 },
             },
-            description: 'OK',
+            description: "OK",
         },
     },
-})
+});
 
 export const openApiDocConfig = {
     openapi: "3.0.0",
@@ -86,4 +120,4 @@ export const openApiDocConfig = {
         description:
             "A secure Python code execution service that runs user code in Docker containers with comprehensive unit testing capabilities.",
     },
-}
+};
