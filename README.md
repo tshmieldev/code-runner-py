@@ -2,7 +2,7 @@
 This is a backend service for running and testing code in a sandboxed environment.
 
 Prerequisites:
-- bun -> `https://bun.com/`
+- bun -> see `https://bun.com/docs/installation`
 - docker -> see `https://docs.docker.com/engine/install/`
 - docker image - python:3.10-slim -> `docker pull python:3.10-slim`
 - make sure the user running the code has docker permissions -> `sudo usermod -aG docker $USER`, then reload terminal or `newgrp docker`
@@ -26,3 +26,4 @@ bun start
 
 ### Contributing
 - Just send a PR!
+- Make sure to `bun test`!
