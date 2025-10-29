@@ -88,8 +88,8 @@ export const metricsRoute = createRoute({
     responses: {
         200: {
             content: {
-                "application/json": {
-                    schema: z.any(), // Managed by prometheus
+                "text/plain": {
+                    schema: z.string(),
                 },
             },
             description: "Server metrics as returned by printMetrics().",

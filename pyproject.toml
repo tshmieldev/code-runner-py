@@ -1,0 +1,19 @@
+[tool.pyright]
+# Global settings
+reportIncompatibleMethodOverride = false
+
+# Main configuration for src/lib/python
+include = ["src/lib/python/**/*.py"]
+reportOptionalMemberAccess = false
+reportMissingImports = false
+reportAny = false
+
+[[tool.pyright.executionEnvironments]]
+# Here, pretty much all rules must be disabled
+# This code will be executed in a container
+# And so, the linter does not know the context, and is unhappy about it.
+root = "tests/data"
+reportIncompatibleMethodOverride = false
+reportMissingImports = false
+reportAny = false
+reportMissingTypeArgument = false

@@ -7,6 +7,9 @@ import { printMetrics } from "../lib/prometheus";
 
 const app = new OpenAPIHono();
 
+// Path is overriden, as I prefer to have the
+// full path in lib/openapi.ts to keep the
+// semantics there and in index.ts
 app.openapi(
     { ...metricsRoute, path: "/" },
     async (c): Promise<RouteConfigToTypedResponse<typeof metricsRoute>> => {
@@ -22,8 +25,9 @@ app.openapi(
                 401,
             );
         }
-        // @ts-ignore This will return 200
-        return printMetrics(c);
+        return printMetrics(c) as unknown as RouteConfigToTypedResponse<
+            typeof metricsRoute
+        >;
     },
 );
 

@@ -8,7 +8,6 @@ let activeContainers = new Set<string>();
 export function buildDockerCommand(
     sessionId: string,
     sessionPath: string,
-    type: "unit-test",
     config?: Config,
 ): string[] {
     const containerName = `code-runner-${sessionId}`;
@@ -56,17 +55,21 @@ export function untrackContainer(containerName: string): void {
 
 export async function cleanupContainer(containerName: string): Promise<void> {
     try {
-        Bun.spawn(["docker", "kill", containerName], {
+        const killProc = Bun.spawn(["docker", "kill", containerName], {
             stdout: "ignore",
             stderr: "ignore",
         });
+        // Wait for the kill command to complete before attempting to remove the container.
+        // This prevents a race condition where `docker rm` is called before the container has stopped.
+        await killProc.exited;
         Bun.spawn(["docker", "rm", "-f", containerName], {
             stdout: "ignore",
             stderr: "ignore",
         });
         activeContainers.delete(containerName);
     } catch (err) {
-        // Ignore cleanup errors
+        // This is non-crucial as containers have the --rm flag
+        console.error(`Error cleaning up container ${containerName}:`, err);
     }
 }
 

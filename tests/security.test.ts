@@ -30,7 +30,11 @@ test("Hacky solution does not pass", async () => {
 
     const returned: RunUnitTestResponse = await res.json();
     runUnitTestResponseSchema.parse(returned);
-    expect(returned!.runalyzer_output!.test_result.total_points).toBe(0);
+    expect(returned.success).toBe(true);
+    if (returned.success) {
+        // This if is here because expect is not a type guard.
+        expect(returned.runalyzer_output.test_result.total_points).toBe(0);
+    }
 });
 
 test("Different return type does not pass", async () => {
@@ -57,7 +61,9 @@ test("Different return type does not pass", async () => {
     const returned: RunUnitTestResponse = await res.json();
     runUnitTestResponseSchema.parse(returned);
     expect(returned.success).toBe(true);
-    expect(returned!.runalyzer_output!.test_result.total_points).toBe(0);
+    if (returned.success) {
+        expect(returned.runalyzer_output.test_result.total_points).toBe(0);
+    }
 });
 
 test("Request with invalid/missing API key does not get processed", async () => {
@@ -77,7 +83,10 @@ test("Request with invalid/missing API key does not get processed", async () => 
     const returned: RunUnitTestResponse = await res.json();
     runUnitTestResponseSchema.parse(returned);
     expect(returned.success).toBe(false);
-    expect(returned.error).toBe("Invalid API key");
+    if (!returned.success) {
+        // This if is here because expect is not a type guard.
+        expect(returned.error).toBe("Invalid API key");
+    }
 });
 
 test("Metrics requests require METRICS_API_KEY", async () => {
@@ -118,7 +127,10 @@ test("Network is not accessible", async () => {
     const returned: RunUnitTestResponse = await res.json();
     runUnitTestResponseSchema.parse(returned);
     expect(returned.success).toBe(false);
-    expect(returned.runalyzer_errors).toInclude("Network is unreachable");
+    if (!returned.success) {
+        // This if is here because expect is not a type guard.
+        expect(returned.runalyzer_errors).toInclude("Network is unreachable");
+    }
 });
 
 test("Write permissions are not granted", async () => {
@@ -146,7 +158,10 @@ test("Write permissions are not granted", async () => {
     runUnitTestResponseSchema.parse(returned);
 
     expect(returned.success).toBe(false);
-    expect(returned.runalyzer_errors).toInclude("Read-only file system");
+    if (!returned.success) {
+        // This if is here because expect is not a type guard.
+        expect(returned.runalyzer_errors).toInclude("Read-only file system");
+    }
 });
 
 test("Code can't delete files", async () => {
@@ -174,7 +189,10 @@ test("Code can't delete files", async () => {
     runUnitTestResponseSchema.parse(returned);
 
     expect(returned.success).toBe(false);
-    expect(returned.runalyzer_errors).toInclude("Read-only file system");
+    if (!returned.success) {
+        // This if is here because expect is not a type guard.
+        expect(returned.runalyzer_errors).toInclude("Read-only file system");
+    }
 });
 
 test("Malformed requests are handled", async () => {

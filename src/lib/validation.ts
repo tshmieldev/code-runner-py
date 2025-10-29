@@ -109,44 +109,50 @@ export const runalyzerOutputSchema = z.object({
     }),
 });
 
-export const runUnitTestResponseSchema = z
-    .object({
-        success: z.boolean().openapi({
-            description: "Whether execution completed successfully",
-            example: true,
-        }),
-        error: z.string().optional().openapi({
-            description: "Error with the request",
-            example: "Invalid API key",
-        }),
-        runalyzer_output: runalyzerOutputSchema
-            .openapi({
-                description: "Test execution results",
-            })
-            .optional(),
-        runalyzer_errors: z.string().optional().openapi({
-            description: "Execution errors",
-            example: "",
-        }),
-        exit_code: z.number().optional().openapi({
-            description:
-                "Process exit code (124 = timeout, 0 = success, !=0 - other error)",
-            example: 0,
-        }),
-    })
-    .refine((data) => {
-        if (data.error && !data.success) {
-            // Don't check for all the optionals
-            return true;
-        }
-        if (!data.success && !data.runalyzer_errors) {
-            throw new Error("Missing error information");
-        }
-        if (data.exit_code === 0) {
-            runalyzerOutputSchema.parse(data.runalyzer_output);
-        }
-        return true;
-    });
+const successResponseSchema = z.object({
+    success: z.literal(true).openapi({
+        description: "Execution completed successfully",
+        example: true,
+    }),
+    runalyzer_output: runalyzerOutputSchema.openapi({
+        description: "Test execution results",
+    }),
+    runalyzer_errors: z.string().optional().openapi({
+        description: "Execution errors (stderr)",
+        example: "",
+    }),
+    exit_code: z.literal(0).openapi({
+        description: "Process exit code (0 for success)",
+        example: 0,
+    }),
+});
+
+const failureResponseSchema = z.object({
+    success: z.literal(false).openapi({
+        description: "Execution or request failed",
+        example: false,
+    }),
+    error: z.string().optional().openapi({
+        description: "Error with the request (e.g., invalid API key)",
+        example: "Invalid API key",
+    }),
+    runalyzer_output: runalyzerOutputSchema.optional().openapi({
+        description: "Partial test execution results, if any",
+    }),
+    runalyzer_errors: z.string().optional().openapi({
+        description: "Execution errors or timeout message",
+        example: "Time limit exceeded",
+    }),
+    exit_code: z.number().optional().openapi({
+        description: "Process exit code (124 = timeout, !=0 - other error)",
+        example: 1,
+    }),
+});
+
+export const runUnitTestResponseSchema = z.discriminatedUnion("success", [
+    successResponseSchema,
+    failureResponseSchema,
+]);
 
 export const statusResponseSchema = z.object({
     runningContainers: z.number().openapi({
