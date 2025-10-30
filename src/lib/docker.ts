@@ -1,6 +1,7 @@
 import { resolve } from "path";
 import { DEFAULT_CONFIG as CONFIG, DOCKER_CONFIG } from "../config";
 import { type Config } from "./validation";
+import { incrementContainers, decrementContainers } from "./prometheus";
 
 // Track active containers
 let activeContainers = new Set<string>();
@@ -47,10 +48,15 @@ export function getContainerName(sessionId: string): string {
 
 export function trackContainer(containerName: string): void {
     activeContainers.add(containerName);
+    incrementContainers();
 }
 
 export function untrackContainer(containerName: string): void {
     activeContainers.delete(containerName);
+    // This is for prometheus to be able to track the container
+    setTimeout(() => {
+        decrementContainers();
+    }, 1200); // Scrape interval = 1000, 200 is for flexibility
 }
 
 export async function cleanupContainer(containerName: string): Promise<void> {
@@ -67,6 +73,7 @@ export async function cleanupContainer(containerName: string): Promise<void> {
             stderr: "ignore",
         });
         activeContainers.delete(containerName);
+        decrementContainers();
     } catch (err) {
         // This is non-crucial as containers have the --rm flag
         console.error(`Error cleaning up container ${containerName}:`, err);
