@@ -1,6 +1,7 @@
 import { resolve } from "path";
 import { DEFAULT_CONFIG as CONFIG, DOCKER_CONFIG } from "../config";
 import { type Config } from "./validation";
+import { incrementContainers, decrementContainers } from "./prometheus";
 
 // Track active containers
 let activeContainers = new Set<string>();
@@ -8,7 +9,6 @@ let activeContainers = new Set<string>();
 export function buildDockerCommand(
     sessionId: string,
     sessionPath: string,
-    type: "unit-test",
     config?: Config,
 ): string[] {
     const containerName = `code-runner-${sessionId}`;
@@ -48,25 +48,35 @@ export function getContainerName(sessionId: string): string {
 
 export function trackContainer(containerName: string): void {
     activeContainers.add(containerName);
+    incrementContainers();
 }
 
 export function untrackContainer(containerName: string): void {
     activeContainers.delete(containerName);
+    // This is for prometheus to be able to track the container
+    setTimeout(() => {
+        decrementContainers();
+    }, 1200); // Scrape interval = 1000, 200 is for flexibility
 }
 
 export async function cleanupContainer(containerName: string): Promise<void> {
     try {
-        Bun.spawn(["docker", "kill", containerName], {
+        const killProc = Bun.spawn(["docker", "kill", containerName], {
             stdout: "ignore",
             stderr: "ignore",
         });
+        // Wait for the kill command to complete before attempting to remove the container.
+        // This prevents a race condition where `docker rm` is called before the container has stopped.
+        await killProc.exited;
         Bun.spawn(["docker", "rm", "-f", containerName], {
             stdout: "ignore",
             stderr: "ignore",
         });
         activeContainers.delete(containerName);
+        decrementContainers();
     } catch (err) {
-        // Ignore cleanup errors
+        // This is non-crucial as containers have the --rm flag
+        console.error(`Error cleaning up container ${containerName}:`, err);
     }
 }
 

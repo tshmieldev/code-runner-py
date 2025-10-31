@@ -8,7 +8,13 @@ def defaultequalityfn(x, y):
 
 class Test:
     def __init__(
-        self, name, args, expected, points, equalityFunc=None, is_secret=False
+        self,
+        name,
+        args,
+        expected,
+        points,
+        equalityFunc=None,
+        is_secret=False,
     ):
         self.name = name
         self.args = args

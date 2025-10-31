@@ -4,6 +4,7 @@ import os
 import sys
 import io
 import time
+
 from unittests import test
 
 try:
@@ -12,7 +13,7 @@ except ImportError:
     sys.__stdout__.write(
         json.dumps(
             {
-                "runalyzer_errors": "Nie znaleziono funkcji solution.",
+                "runalyzer_errors": "Solution function not found.",
                 "test_result": None,
                 "stdout": None,
                 "stderr": None,
@@ -21,6 +22,8 @@ except ImportError:
         )
     )
     exit(1)
+
+MAX_LENGTH = 1024
 
 
 def truncate_output(output, max_chars=256):
@@ -52,8 +55,8 @@ if __name__ == "__main__":
         exit(1)
 
     # Get captured output and truncate
-    stdout_data = truncate_output(stdout_capture.getvalue(), 1024)
-    stderr_data = truncate_output(stderr_capture.getvalue(), 1024)
+    stdout_data = truncate_output(stdout_capture.getvalue(), MAX_LENGTH)
+    stderr_data = truncate_output(stderr_capture.getvalue(), MAX_LENGTH)
 
     # Redirect further output to /dev/null
     with open(os.devnull, "w") as devnull:
@@ -66,8 +69,8 @@ if __name__ == "__main__":
                         "stdout": stdout_data,
                         "stderr": stderr_data,
                         "duration": duration,
-                        "truncated": len(stdout_capture.getvalue()) > 1024
-                        or len(stderr_capture.getvalue()) > 1024,
+                        "truncated": len(stdout_capture.getvalue()) > MAX_LENGTH
+                        or len(stderr_capture.getvalue()) > MAX_LENGTH,
                     }
                 )
             )
