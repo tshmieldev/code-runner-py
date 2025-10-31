@@ -1,7 +1,6 @@
 import { serve } from "bun";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { Scalar } from "@scalar/hono-api-reference";
-import { prometheus } from "@hono/prometheus";
 import { openApiDocConfig } from "./lib/openapi";
 import { DEFAULT_CONFIG as CONFIG } from "./config";
 import { setupContainerCleanup } from "./lib/docker";
