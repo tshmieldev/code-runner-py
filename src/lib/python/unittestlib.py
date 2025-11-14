@@ -1,5 +1,5 @@
-import os
 import contextlib
+import os
 
 
 def defaultequalityfn(x, y):
@@ -24,37 +24,47 @@ class Test:
         self.equalityFunc = equalityFunc or defaultequalityfn
 
     def run(self, solution):
-        if self.is_secret:
-            with open(os.devnull, "w") as devnull:
-                with (
-                    contextlib.redirect_stdout(devnull),
-                    contextlib.redirect_stderr(devnull),
-                ):
-                    result = solution(*self.args)
-        else:
-            result = solution(*self.args)
-            # This is to help students debug their code (their prints are not split by tests, so this helps)
-            print(f"-- Test: {self.name}: {result} --")
-        if (
-            # If you override the equality function, type checking is on you!
-            self.equalityFunc != defaultequalityfn
-            or type(result) is type(self.expected)
-        ) and self.equalityFunc(result, self.expected):
-            return {
-                "name": "Ukryty test" if self.is_secret else self.name,
-                "points": self.points,
-                "max_points": self.points,
-                "expected": "N/A" if self.is_secret else str(self.expected),
-                "result": "N/A" if self.is_secret else str(result),
-                "is_secret": self.is_secret,
-            }
-        else:
+        try:
+            if self.is_secret:
+                with open(os.devnull, "w") as devnull:
+                    with (
+                        contextlib.redirect_stdout(devnull),
+                        contextlib.redirect_stderr(devnull),
+                    ):
+                        result = solution(*self.args)
+            else:
+                result = solution(*self.args)
+                # This is to help students debug their code (their prints are not split by tests, so this helps)
+                print(f"-- Test: {self.name}: {result} --")
+            if (
+                # If you override the equality function, type checking is on you!
+                self.equalityFunc != defaultequalityfn
+                or type(result) is type(self.expected)
+            ) and self.equalityFunc(result, self.expected):
+                return {
+                    "name": "Ukryty test" if self.is_secret else self.name,
+                    "points": self.points,
+                    "max_points": self.points,
+                    "expected": "N/A" if self.is_secret else str(self.expected),
+                    "result": "N/A" if self.is_secret else str(result),
+                    "is_secret": self.is_secret,
+                }
+            else:
+                return {
+                    "name": "Ukryty test" if self.is_secret else self.name,
+                    "points": 0,
+                    "max_points": self.points,
+                    "expected": "N/A" if self.is_secret else str(self.expected),
+                    "result": "N/A" if self.is_secret else str(result),
+                    "is_secret": self.is_secret,
+                }
+        except Exception as e:
             return {
                 "name": "Ukryty test" if self.is_secret else self.name,
                 "points": 0,
                 "max_points": self.points,
                 "expected": "N/A" if self.is_secret else str(self.expected),
-                "result": "N/A" if self.is_secret else str(result),
+                "result": f"Exception: {str(e)}",
                 "is_secret": self.is_secret,
             }
 

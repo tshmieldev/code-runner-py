@@ -2,283 +2,288 @@ import { test, expect } from "bun:test";
 import app from "../src/controllers/unit-tests";
 import statusApp from "../src/controllers/status";
 import {
-  type RunUnitTestRequest,
-  type RunUnitTestResponse,
-  runUnitTestResponseSchema,
-  type StatusResponse,
-  statusResponseSchema,
+    type RunUnitTestRequest,
+    type RunUnitTestResponse,
+    runUnitTestResponseSchema,
+    type StatusResponse,
+    statusResponseSchema,
 } from "../src/lib/validation";
 
 test("Runalyzer works without errors", async () => {
-  const mockUserCode = await Bun.file(
-    __dirname + "/data/mock-code-1.py",
-  ).text();
-  const mockUnitTests = await Bun.file(
-    __dirname + "/data/mock-tests-1.py",
-  ).text();
+    const mockUserCode = await Bun.file(
+        __dirname + "/data/mock-code-1.py",
+    ).text();
+    const mockUnitTests = await Bun.file(
+        __dirname + "/data/mock-tests-1.py",
+    ).text();
 
-  const payload: RunUnitTestRequest = {
-    api_key: process?.env?.API_KEY || "",
-    user_code: mockUserCode,
-    unit_tests: mockUnitTests,
-  };
+    const payload: RunUnitTestRequest = {
+        api_key: process?.env?.API_KEY || "",
+        user_code: mockUserCode,
+        unit_tests: mockUnitTests,
+    };
 
-  const res = await app.request("/", {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
+    const res = await app.request("/", {
+        method: "POST",
+        body: JSON.stringify(payload),
+    });
 
-  expect(res.status).toBe(200);
+    expect(res.status).toBe(200);
 
-  const returned: RunUnitTestResponse = await res.json();
-  runUnitTestResponseSchema.parse(returned);
-  return true;
+    const returned: RunUnitTestResponse = await res.json();
+    runUnitTestResponseSchema.parse(returned);
+    return true;
 });
 
 test("Correct code gets max points - simple return type", async () => {
-  const mockUserCode = await Bun.file(
-    __dirname + "/data/mock-code-1.py",
-  ).text();
-  const mockUnitTests = await Bun.file(
-    __dirname + "/data/mock-tests-1.py",
-  ).text();
+    const mockUserCode = await Bun.file(
+        __dirname + "/data/mock-code-1.py",
+    ).text();
+    const mockUnitTests = await Bun.file(
+        __dirname + "/data/mock-tests-1.py",
+    ).text();
 
-  const payload: RunUnitTestRequest = {
-    api_key: process?.env?.API_KEY || "",
-    user_code: mockUserCode,
-    unit_tests: mockUnitTests,
-  };
+    const payload: RunUnitTestRequest = {
+        api_key: process?.env?.API_KEY || "",
+        user_code: mockUserCode,
+        unit_tests: mockUnitTests,
+    };
 
-  const res = await app.request("/", {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
+    const res = await app.request("/", {
+        method: "POST",
+        body: JSON.stringify(payload),
+    });
 
-  expect(res.status).toBe(200);
+    expect(res.status).toBe(200);
 
-  const returned: RunUnitTestResponse = await res.json();
-  runUnitTestResponseSchema.parse(returned);
+    const returned: RunUnitTestResponse = await res.json();
+    runUnitTestResponseSchema.parse(returned);
 
-  expect(returned.success).toBe(true);
-  const { total_points, max_total_points } =
-    returned!.runalyzer_output!.test_result;
-  expect(total_points).toBe(max_total_points);
+    expect(returned.success).toBe(true);
+    const { total_points, max_total_points } =
+        returned!.runalyzer_output!.test_result;
+    expect(total_points).toBe(max_total_points);
 });
 
 test("Correct code gets max points - custom return type", async () => {
-  const mockUserCode = await Bun.file(
-    __dirname + "/data/mock-code-2.py",
-  ).text();
-  const mockUnitTests = await Bun.file(
-    __dirname + "/data/mock-tests-2.py",
-  ).text();
+    const mockUserCode = await Bun.file(
+        __dirname + "/data/mock-code-2.py",
+    ).text();
+    const mockUnitTests = await Bun.file(
+        __dirname + "/data/mock-tests-2.py",
+    ).text();
 
-  const payload: RunUnitTestRequest = {
-    api_key: process?.env?.API_KEY || "",
-    user_code: mockUserCode,
-    unit_tests: mockUnitTests,
-  };
+    const payload: RunUnitTestRequest = {
+        api_key: process?.env?.API_KEY || "",
+        user_code: mockUserCode,
+        unit_tests: mockUnitTests,
+    };
 
-  const res = await app.request("/", {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
+    const res = await app.request("/", {
+        method: "POST",
+        body: JSON.stringify(payload),
+    });
 
-  expect(res.status).toBe(200);
+    expect(res.status).toBe(200);
 
-  const returned: RunUnitTestResponse = await res.json();
-  runUnitTestResponseSchema.parse(returned);
-  expect(returned.success).toBe(true);
-  const { total_points, max_total_points } =
-    returned!.runalyzer_output!.test_result;
-  expect(total_points).toBe(max_total_points);
+    const returned: RunUnitTestResponse = await res.json();
+    runUnitTestResponseSchema.parse(returned);
+    expect(returned.success).toBe(true);
+    const { total_points, max_total_points } =
+        returned!.runalyzer_output!.test_result;
+    expect(total_points).toBe(max_total_points);
 });
 
 test("Incorrect code gets less than max points - simple return type", async () => {
-  const mockUserCode = await Bun.file(
-    __dirname + "/data/mock-wrong-1.py",
-  ).text();
-  const mockUnitTests = await Bun.file(
-    __dirname + "/data/mock-tests-1.py",
-  ).text();
+    const mockUserCode = await Bun.file(
+        __dirname + "/data/mock-wrong-1.py",
+    ).text();
+    const mockUnitTests = await Bun.file(
+        __dirname + "/data/mock-tests-1.py",
+    ).text();
 
-  const payload: RunUnitTestRequest = {
-    api_key: process?.env?.API_KEY || "",
-    user_code: mockUserCode,
-    unit_tests: mockUnitTests,
-  };
+    const payload: RunUnitTestRequest = {
+        api_key: process?.env?.API_KEY || "",
+        user_code: mockUserCode,
+        unit_tests: mockUnitTests,
+    };
 
-  const res = await app.request("/", {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
+    const res = await app.request("/", {
+        method: "POST",
+        body: JSON.stringify(payload),
+    });
 
-  expect(res.status).toBe(200);
+    expect(res.status).toBe(200);
 
-  const returned: RunUnitTestResponse = await res.json();
-  runUnitTestResponseSchema.parse(returned);
-  expect(returned.success).toBe(true);
-  const { total_points, max_total_points } =
-    returned!.runalyzer_output!.test_result;
-  expect(total_points).toBeLessThan(max_total_points);
+    const returned: RunUnitTestResponse = await res.json();
+    runUnitTestResponseSchema.parse(returned);
+    expect(returned.success).toBe(true);
+    const { total_points, max_total_points } =
+        returned!.runalyzer_output!.test_result;
+    expect(total_points).toBeLessThan(max_total_points);
 });
 
 test("Invalid code is handled, shows SyntaxError", async () => {
-  const mockUserCode = await Bun.file(
-    __dirname + "/data/mock-invalid-code.py",
-  ).text();
-  const mockUnitTests = await Bun.file(
-    __dirname + "/data/mock-tests-1.py",
-  ).text();
+    const mockUserCode = await Bun.file(
+        __dirname + "/data/mock-invalid-code.py",
+    ).text();
+    const mockUnitTests = await Bun.file(
+        __dirname + "/data/mock-tests-1.py",
+    ).text();
 
-  const payload: RunUnitTestRequest = {
-    api_key: process?.env?.API_KEY || "",
-    user_code: mockUserCode,
-    unit_tests: mockUnitTests,
-  };
+    const payload: RunUnitTestRequest = {
+        api_key: process?.env?.API_KEY || "",
+        user_code: mockUserCode,
+        unit_tests: mockUnitTests,
+    };
 
-  const res = await app.request("/", {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
+    const res = await app.request("/", {
+        method: "POST",
+        body: JSON.stringify(payload),
+    });
 
-  expect(res.status).toBe(200);
+    expect(res.status).toBe(200);
 
-  const returned: RunUnitTestResponse = await res.json();
-  runUnitTestResponseSchema.parse(returned);
-  expect(returned.success).toBe(false);
-  expect(returned.runalyzer_errors).toInclude("SyntaxError");
+    const returned: RunUnitTestResponse = await res.json();
+    runUnitTestResponseSchema.parse(returned);
+    expect(returned.success).toBe(false);
+    expect(returned.runalyzer_errors).toInclude("SyntaxError");
 });
 
 test("Buggy code is handled, shows error", async () => {
-  const mockUserCode = await Bun.file(
-    __dirname + "/data/mock-buggy-code.py",
-  ).text();
-  const mockUnitTests = await Bun.file(
-    __dirname + "/data/mock-tests-1.py",
-  ).text();
+    const mockUserCode = await Bun.file(
+        __dirname + "/data/mock-buggy-code.py",
+    ).text();
+    const mockUnitTests = await Bun.file(
+        __dirname + "/data/mock-tests-1.py",
+    ).text();
 
-  const payload: RunUnitTestRequest = {
-    api_key: process?.env?.API_KEY || "",
-    user_code: mockUserCode,
-    unit_tests: mockUnitTests,
-  };
+    const payload: RunUnitTestRequest = {
+        api_key: process?.env?.API_KEY || "",
+        user_code: mockUserCode,
+        unit_tests: mockUnitTests,
+    };
 
-  const res = await app.request("/", {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
+    const res = await app.request("/", {
+        method: "POST",
+        body: JSON.stringify(payload),
+    });
 
-  expect(res.status).toBe(200);
+    expect(res.status).toBe(200);
 
-  const returned: RunUnitTestResponse = await res.json();
-  runUnitTestResponseSchema.parse(returned);
-  expect(returned.success).toBe(false);
-  expect(returned.runalyzer_errors).toBeTruthy();
+    const returned: RunUnitTestResponse = await res.json();
+    runUnitTestResponseSchema.parse(returned);
+    expect(returned.success).toBeTrue();
+    expect(returned.runalyzer_output?.test_result.success).toBeFalse();
+
+    const testResults = returned.runalyzer_output?.test_result.results || [];
+    const errFound = testResults.every((tr) =>
+        tr.result?.includes("Exception"),
+    );
 });
 
 test(
-  "Timeout code is handled, shows Time Limit Exceeded",
-  async () => {
-    const mockUserCode = await Bun.file(
-      __dirname + "/data/mock-timeout-code.py",
-    ).text();
-    const mockUnitTests = await Bun.file(
-      __dirname + "/data/mock-tests-1.py",
-    ).text();
+    "Timeout code is handled, shows Time Limit Exceeded",
+    async () => {
+        const mockUserCode = await Bun.file(
+            __dirname + "/data/mock-timeout-code.py",
+        ).text();
+        const mockUnitTests = await Bun.file(
+            __dirname + "/data/mock-tests-1.py",
+        ).text();
 
-    const payload: RunUnitTestRequest = {
-      api_key: process?.env?.API_KEY || "",
-      user_code: mockUserCode,
-      unit_tests: mockUnitTests,
-    };
+        const payload: RunUnitTestRequest = {
+            api_key: process?.env?.API_KEY || "",
+            user_code: mockUserCode,
+            unit_tests: mockUnitTests,
+        };
 
-    const res = await app.request("/", {
-      method: "POST",
-      body: JSON.stringify(payload),
-    });
+        const res = await app.request("/", {
+            method: "POST",
+            body: JSON.stringify(payload),
+        });
 
-    expect(res.status).toBe(200);
+        expect(res.status).toBe(200);
 
-    const returned: RunUnitTestResponse = await res.json();
-    runUnitTestResponseSchema.parse(returned);
-    expect(returned.exit_code).toBe(124);
-    expect(returned.success).toBe(false);
-    expect(returned.runalyzer_errors).toInclude("Time limit exceeded");
-  },
-  {
-    timeout: 6000,
-  },
+        const returned: RunUnitTestResponse = await res.json();
+        runUnitTestResponseSchema.parse(returned);
+        expect(returned.exit_code).toBe(124);
+        expect(returned.success).toBe(false);
+        expect(returned.runalyzer_errors).toInclude("Time limit exceeded");
+    },
+    {
+        timeout: 6000,
+    },
 );
 
 test(
-  "Config override of timeout works",
-  async () => {
-    const mockUserCode = await Bun.file(
-      __dirname + "/data/mock-timeout-code.py",
-    ).text();
-    const mockUnitTests = await Bun.file(
-      __dirname + "/data/mock-tests-1.py",
-    ).text();
+    "Config override of timeout works",
+    async () => {
+        const mockUserCode = await Bun.file(
+            __dirname + "/data/mock-timeout-code.py",
+        ).text();
+        const mockUnitTests = await Bun.file(
+            __dirname + "/data/mock-tests-1.py",
+        ).text();
 
-    const payload: RunUnitTestRequest = {
-      api_key: process?.env?.API_KEY || "",
-      user_code: mockUserCode,
-      unit_tests: mockUnitTests,
-      config: {
-        timeout: 6,
-      },
-    };
+        const payload: RunUnitTestRequest = {
+            api_key: process?.env?.API_KEY || "",
+            user_code: mockUserCode,
+            unit_tests: mockUnitTests,
+            config: {
+                timeout: 6,
+            },
+        };
 
-    const res = await app.request("/", {
-      method: "POST",
-      body: JSON.stringify(payload),
-    });
+        const res = await app.request("/", {
+            method: "POST",
+            body: JSON.stringify(payload),
+        });
 
-    expect(res.status).toBe(200);
+        expect(res.status).toBe(200);
 
-    const returned: RunUnitTestResponse = await res.json();
-    runUnitTestResponseSchema.parse(returned);
-    expect(returned.exit_code).toBe(124);
-    expect(returned.success).toBe(false);
-    expect(returned.runalyzer_errors).toInclude("Time limit exceeded");
-  },
-  {
-    timeout: 7000,
-  },
+        const returned: RunUnitTestResponse = await res.json();
+        runUnitTestResponseSchema.parse(returned);
+        expect(returned.exit_code).toBe(124);
+        expect(returned.success).toBe(false);
+        expect(returned.runalyzer_errors).toInclude("Time limit exceeded");
+    },
+    {
+        timeout: 7000,
+    },
 );
 
 test("Status endpoint returns correct number of running containers", async () => {
-  const mockUserCode = await Bun.file(
-    __dirname + "/data/mock-timeout-code.py",
-  ).text();
-  const mockUnitTests = await Bun.file(
-    __dirname + "/data/mock-tests-1.py",
-  ).text();
+    const mockUserCode = await Bun.file(
+        __dirname + "/data/mock-timeout-code.py",
+    ).text();
+    const mockUnitTests = await Bun.file(
+        __dirname + "/data/mock-tests-1.py",
+    ).text();
 
-  const payload: RunUnitTestRequest = {
-    api_key: process?.env?.API_KEY || "",
-    user_code: mockUserCode,
-    unit_tests: mockUnitTests,
-  };
-  const res = await statusApp.request("/", { method: "GET" });
-  expect(res.status).toBe(200);
-  const returned: StatusResponse = await res.json();
-  statusResponseSchema.parse(returned);
-  expect(returned.runningContainers).toBe(0);
-  // Not awaiting on purpose, we want it to be running in the background
-  const resPromise = app.request("/", {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
-  // Give enough time for the container to start
-  await new Promise((resolve) => setTimeout(resolve, 150));
+    const payload: RunUnitTestRequest = {
+        api_key: process?.env?.API_KEY || "",
+        user_code: mockUserCode,
+        unit_tests: mockUnitTests,
+    };
+    const res = await statusApp.request("/", { method: "GET" });
+    expect(res.status).toBe(200);
+    const returned: StatusResponse = await res.json();
+    statusResponseSchema.parse(returned);
+    expect(returned.runningContainers).toBe(0);
+    // Not awaiting on purpose, we want it to be running in the background
+    const resPromise = app.request("/", {
+        method: "POST",
+        body: JSON.stringify(payload),
+    });
+    // Give enough time for the container to start
+    await new Promise((resolve) => setTimeout(resolve, 150));
 
-  const res2 = await statusApp.request("/", { method: "GET" });
+    const res2 = await statusApp.request("/", { method: "GET" });
 
-  expect(res2.status).toBe(200);
-  const returned2 = await res2.json();
-  expect(returned2.runningContainers).toBe(1);
+    expect(res2.status).toBe(200);
+    const returned2 = await res2.json();
+    expect(returned2.runningContainers).toBe(1);
 
-  // Not awaiting on purpose again, no need to hold up the rest of the tests
+    // Not awaiting on purpose again, no need to hold up the rest of the tests
 });

@@ -36,6 +36,7 @@ app.get(
         theme: "kepler",
     }),
 );
+
 // Sorry, Scalar is just cooler than Swagger
 // app.get("/api-docs", swaggerUI({ url: "/doc" }));
 

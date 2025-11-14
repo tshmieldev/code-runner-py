@@ -126,7 +126,16 @@ test("Network is not accessible", async () => {
 
     const returned: RunUnitTestResponse = await res.json();
     runUnitTestResponseSchema.parse(returned);
-    expect(returned.success).toBe(false);
+    expect(returned.success).toBeTrue();
+    expect(returned.runalyzer_output?.test_result.success).toBeFalse();
+
+    const testResults = returned.runalyzer_output?.test_result.results || [];
+    const errFound = testResults.every((tr) =>
+        tr.result?.includes("[Errno 101]"),
+    );
+
+    expect(errFound).toBeTrue();
+
     if (!returned.success) {
         // This if is here because expect is not a type guard.
         expect(returned.runalyzer_errors).toInclude("Network is unreachable");
@@ -157,11 +166,15 @@ test("Write permissions are not granted", async () => {
     const returned: RunUnitTestResponse = await res.json();
     runUnitTestResponseSchema.parse(returned);
 
-    expect(returned.success).toBe(false);
-    if (!returned.success) {
-        // This if is here because expect is not a type guard.
-        expect(returned.runalyzer_errors).toInclude("Read-only file system");
-    }
+    expect(returned.success).toBeTrue();
+    expect(returned.runalyzer_output?.test_result.success).toBeFalse();
+
+    const testResults = returned.runalyzer_output?.test_result.results || [];
+    const errFound = testResults.every((tr) =>
+        tr.result?.includes("[Errno 30]"),
+    );
+
+    expect(errFound).toBeTrue();
 });
 
 test("Code can't delete files", async () => {
@@ -188,11 +201,13 @@ test("Code can't delete files", async () => {
     const returned: RunUnitTestResponse = await res.json();
     runUnitTestResponseSchema.parse(returned);
 
-    expect(returned.success).toBe(false);
-    if (!returned.success) {
-        // This if is here because expect is not a type guard.
-        expect(returned.runalyzer_errors).toInclude("Read-only file system");
-    }
+    expect(returned.success).toBeTrue();
+    expect(returned.runalyzer_output?.test_result.success).toBeFalse();
+
+    const testResults = returned.runalyzer_output?.test_result.results || [];
+    const errFound = testResults.every((tr) =>
+        tr.result?.includes("[Errno 30]"),
+    );
 });
 
 test("Malformed requests are handled", async () => {
