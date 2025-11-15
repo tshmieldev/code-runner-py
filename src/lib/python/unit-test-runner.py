@@ -1,4 +1,3 @@
-import builtins
 import contextlib
 import io
 import json
@@ -15,13 +14,14 @@ _real_stderr = sys.__stderr__
 # Close and replace sys.__stdout__ and sys.__stderr__ before importing usercode
 # This prevents usercode from using sys.__stdout__ to bypass redirection
 try:
-    # Create closed file objects that will raise ValueError if accessed
-    closed_file = open(os.devnull, "w")
-    closed_file.close()
-
+    # Create separate closed file objects for stdout and stderr that will raise ValueError if accessed
+    closed_stdout = open(os.devnull, "w")
+    closed_stdout.close()
+    closed_stderr = open(os.devnull, "w")
+    closed_stderr.close()
     # Replace the dunder attributes with closed files
-    sys.__stdout__ = closed_file
-    sys.__stderr__ = closed_file
+    sys.__stdout__ = closed_stdout
+    sys.__stderr__ = closed_stderr
 except Exception as e:
     _real_stderr.write(f"Warning: Could not close __stdout__/__stderr__: {e}\n")
 
