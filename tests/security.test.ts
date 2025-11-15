@@ -210,6 +210,34 @@ test("Code can't delete files", async () => {
     );
 });
 
+test("User code can't override stdout", async () => {
+    const mockUserCode = await Bun.file(
+        __dirname + "/data/mock-stdout-abuse-code.py",
+    ).text();
+    const mockUnitTests = await Bun.file(
+        __dirname + "/data/mock-tests-1.py",
+    ).text();
+
+    const payload: RunUnitTestRequest = {
+        api_key: process?.env?.API_KEY || "",
+        user_code: mockUserCode,
+        unit_tests: mockUnitTests,
+    };
+
+    const res = await app.request("/", {
+        method: "POST",
+        body: JSON.stringify(payload),
+    });
+
+    expect(res.status).toBe(200);
+
+    const returned: RunUnitTestResponse = await res.json();
+    runUnitTestResponseSchema.parse(returned);
+
+    expect(returned.success).toBeTrue();
+    expect(returned.runalyzer_output?.test_result.success).toBeFalse();
+});
+
 test("Malformed requests are handled", async () => {
     const res = await app.request("/", {
         method: "POST",

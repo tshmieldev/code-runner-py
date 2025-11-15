@@ -1,16 +1,34 @@
 import contextlib
+import io
 import json
 import os
 import sys
-import io
 import time
 
 from unittests import test
 
+# Save the real stdout/stderr for our own use
+_real_stdout = sys.__stdout__
+_real_stderr = sys.__stderr__
+
+# Close and replace sys.__stdout__ and sys.__stderr__ before importing usercode
+# This prevents usercode from using sys.__stdout__ to bypass redirection
+try:
+    # Create separate closed file objects for stdout and stderr that will raise ValueError if accessed
+    closed_stdout = open(os.devnull, "w")
+    closed_stdout.close()
+    closed_stderr = open(os.devnull, "w")
+    closed_stderr.close()
+    # Replace the dunder attributes with closed files
+    sys.__stdout__ = closed_stdout
+    sys.__stderr__ = closed_stderr
+except Exception as e:
+    _real_stderr.write(f"Warning: Could not close __stdout__/__stderr__: {e}\n")
+
 try:
     from usercode import solution
 except ImportError:
-    sys.__stdout__.write(
+    _real_stdout.write(
         json.dumps(
             {
                 "runalyzer_errors": "Solution function not found.",
@@ -51,7 +69,7 @@ if __name__ == "__main__":
             duration = end - start
 
     except Exception as e:
-        sys.__stderr__.write(str(e))
+        _real_stderr.write(str(e))
         exit(1)
 
     # Get captured output and truncate
@@ -62,7 +80,7 @@ if __name__ == "__main__":
     with open(os.devnull, "w") as devnull:
         with contextlib.redirect_stdout(devnull), contextlib.redirect_stderr(devnull):
             # Print final results (this goes to the original stdout before redirection)
-            sys.__stdout__.write(
+            _real_stdout.write(
                 json.dumps(
                     {
                         "test_result": test_res,
